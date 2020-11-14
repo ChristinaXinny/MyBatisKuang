@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+<!--财产【数据库就是一个财产】来源-->
+    <properties resource="db.properties"/>
+
+<!--日志-->
+    <settings>
+        <setting name="logImpl" value="STDOUT_LOGGING"/>
+    </settings>
+
+<!--改名替换-->
+    <typeAliases>
+        <package name="com.lxy.pojo"/>
+    </typeAliases>
+
+<!--环境配置-->
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="${driver}"/>
+                <property name="url" value="${url}"/>
+                <property name="username" value="${username}"/>
+                <property name="password" value="${password}"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+<!--mapper绑定注册-->
+    <mappers>
+        <mapper class="BlogMapper"/>
+<!--        <mapper class="com.lxy.dao.BlogMapper"/>-->
+    </mappers>
+
+
+</configuration>

@@ -1,0 +1,149 @@
+
+
+
+
+
+
+
+1.
+当传入参数是int类型当时候 想在mapper的xml中体现出来 就要写成是_int
+User selectId(int id);
+<select id="selectId" parameterType="_int" resultType="user"></select>
+
+返回int类型也是一样的
+int insertId(User user);
+<insert id="insertId" parameterType="user" resultType="_int"></insert>
+
+
+
+
+
+2.
+SqlSession sqlSession = MybatisUtils.getSqlSession();
+UserMapper mapper = sqlSession.getMapper(UserMapper.class);
+
+User user = mapper.selectId(1);
+System.out.println(user);
+
+System.out.println("========================");
+User user1 = mapper.selectId(1);
+System.out.println(user1);
+
+System.out.println(user==user1);
+
+sqlSession.close();
+
+查询的两次都是一样的 就是说调用sqlSession只用了一次
+Opening JDBC Connection
+Created connection 1362546706.
+==>  Preparing: select * from user where id = ?
+==> Parameters: 1(Integer)
+<==    Columns: id, name, pwd
+<==        Row: 1, qwe, aaaa
+<==      Total: 1
+User{id=1, name='qwe', password='aaaa'}
+========================
+User{id=1, name='qwe', password='aaaa'}
+true
+Closing JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@5136d012]
+Returned connection 1362546706 to pool.
+
+
+
+
+
+
+
+3。
+User user = mapper.selectId(1);
+System.out.println(user);
+
+System.out.println("========================");
+User user1 = mapper.selectId(2);
+System.out.println(user1);
+
+System.out.println(user==user1);
+查询两次的时候
+sqlSession就用了两次
+
+Opening JDBC Connection
+Created connection 1362546706.
+==>  Preparing: select * from user where id = ?
+==> Parameters: 1(Integer)
+<==    Columns: id, name, pwd
+<==        Row: 1, qwe, aaaa
+<==      Total: 1
+User{id=1, name='qwe', password='aaaa'}
+========================
+==>  Preparing: select * from user where id = ?
+==> Parameters: 2(Integer)
+<==    Columns: id, name, pwd
+<==        Row: 2, www, 123123
+<==      Total: 1
+User{id=2, name='www', password='123123'}
+false
+Closing JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@5136d012]
+Returned connection 1362546706 to pool.
+
+
+
+4.调用了三次sqlSession
+Opening JDBC Connection
+Created connection 1362546706.
+==>  Preparing: select * from user where id = ?
+==> Parameters: 1(Integer)
+<==    Columns: id, name, pwd
+<==        Row: 1, qwe, aaaa
+<==      Total: 1
+User{id=1, name='qwe', password='aaaa'}
+==>  Preparing: update user set name = ?, pwd= ? where id= ?
+==> Parameters: qqq(String), 3333(String), 2(Integer)
+<==    Updates: 1
+========================
+==>  Preparing: select * from user where id = ?
+==> Parameters: 2(Integer)
+<==    Columns: id, name, pwd
+<==        Row: 2, qqq, 3333
+<==      Total: 1
+User{id=2, name='qqq', password='3333'}
+false
+Closing JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@5136d012]
+Returned connection 1362546706 to pool.
+
+
+
+//***********************二级缓存*************************************************
+1、开启全局缓存 【mybatis-config.xml】
+    <setting name="cacheEnabled" value="true"/>
+2、去每个mapper.xml中配置使用二级缓存，这个配置非常简单；【xxxMapper.xml】
+    <cache/>
+            官方示例=====>查看官方文档
+            <cache
+             eviction="FIFO"
+             flushInterval="60000"
+             size="512"
+             readOnly="true"/>
+            这个更高级的配置创建了一个 FIFO 缓存，每隔 60 秒刷新，
+            最多可以存储结果对象或列表的 512 个引用，而且返回的对象被认为是只读的，
+            因此对它们进行修改可能会在不同线程中的调用者产生冲突。
+一定要配一个官方文档就可以 不配置官方文档的 就不行
+只用<cache/>会报错
+需要将实体类序列化 否则就是会报错
+public class User implements Serializable{}
+在user类开头声明一个接口implements Serializable
+
+
+就一次
+Opening JDBC Connection
+Created connection 373928166.
+==>  Preparing: select * from user where id = ?
+==> Parameters: 1(Integer)
+<==    Columns: id, name, pwd
+<==        Row: 1, qwe, aaaa
+<==      Total: 1
+User{id=1, name='qwe', password='aaaa'}
+Closing JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@1649b0e6]
+Returned connection 373928166 to pool.
+Cache Hit Ratio [com.lxy.dao.UserMapper]: 0.5
+User{id=1, name='qwe', password='aaaa'}
+true

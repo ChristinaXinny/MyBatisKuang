@@ -1,0 +1,229 @@
+
+
+
+
+CREATE TABLE `blog`(
+`id` VARCHAR(50) NOT NULL COMMENT '博客id',
+`title` VARCHAR(100) NOT NULL COMMENT '博客标题',
+`author` VARCHAR(30) NOT NULL COMMENT '博客作者',
+`create_time` DATETIME NOT NULL COMMENT '创建时间',
+`views` INT(30) NOT NULL COMMENT '浏览量'
+)ENGINE=INNODB DEFAULT CHARSET=utf8
+
+
+
+
+四大动态sql语句
+if
+choose
+trim
+foreach
+
+
+
+*******************
+1。IDutils
+@SuppressWarnings("all")//抑制警告【除去IDutils下面的波浪线
+public class IDutils {
+
+
+
+
+
+2。IDutils
+通过java.util.UUID;的randomUUID（）获取一个随机的数字【含字母和数字
+    获取一个随机的id
+
+        return UUID.randomUUID().toString();
+生成出的格式：
+2a527633-2a6e-4850-892a-83604717ebe0
+
+        return UUID.randomUUID().toString().replaceAll("-", "");
+把'-'替换成''
+00951563655c414c814e86c5747e7b49
+e7268d98637f419c871ad3212d2d76b4
+20b7499ff2e74a9584ab7e30d3d1cc70
+
+
+
+
+
+
+
+3。mybatis-config.xml
+<settings>
+        <setting name="logImpl" value="STDOUT_LOGGING"/>
+驼峰命名 camel case映射
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+    </settings>
+基于java类的属性是驼峰
+数据库内是xx_xx
+
+
+
+4.记得提交事务
+
+
+
+
+
+
+*******************if
+5.if的sql语句
+    <select id="queryBlogIF" parameterType="map" resultType="blog">
+        select * from blog where 1=1
+        <if test="title != null">
+            and title = #{title}
+        </if>
+        <if test="author != null">
+            and author = #{author}
+        </if>
+    </select>
+
+
+<if test="。。。">
+    and 。。。
+</if>
+
+
+
+
+
+6。MyTest-----test02
+//    查询if   【当map为空的时候 也可以查询出】
+    @Test
+    public void teat2If(){
+        SqlSession sqlSession = MybatisUtils.getSqlSession();
+        BlogMapper mapper = sqlSession.getMapper(BlogMapper.class);
+
+        HashMap hashMap = new HashMap();
+
+        List<Blog> blogs = mapper.queryBlogIF(hashMap);
+
+        blogs.forEach(System.out::println);
+
+
+        sqlSession.close();
+
+    }
+就是没有进入if语句
+mapper的if语句
+select * from blog where true
+if title != null
+[这里就加上了and的sql语句【即限定where的范围
+
+
+
+
+
+7。查询
+动态sql可以实现表的数据的查询
+
+在java语句里面传入不同的参数，就好比是从前端输入了参数时候 在后端获取到的数据z
+在经过动态
+
+
+
+
+
+
+
+
+凡是sql语句中出现where，set之类的 就改成标签
+*******************where
+8。 <where>标签
+像
+<select id="queryBlogIF" parameterType="map" resultType="blog">
+     select * from blog where
+     <if test="title != null">
+         and title = #{title}
+     </if>
+     <if test="author != null">
+         and author = #{author}
+     </if>
+ </select>
+ 会出现
+当查询
+《1》仅仅查询title = #{title}的时候
+sql语句：select * from blog where title = #{title}
+符合sql语法
+
+《2》查询title = #{title}和 author = #{author}
+sql语句：select * from blog where title = #{title} and author = #{author}
+也合法
+
+《3》仅仅查询author = #{author}
+就会出现select * from blog where and author = #{author}
+where and 不符合sql语句
+所以增加了<where>
+只能的把and删去或出现
+即使是《3》select * from blog where author = #{author}
+
+<select id="queryBlogIF" parameterType="map" resultType="blog">
+    select * from blog
+    <where>
+        <if test="title != null">
+            title = #{title}
+        </if>
+        <if test="author != null">
+            and author = #{author}
+        </if>
+    </where>
+</select>
+
+《4》传入空map也没有问题
+
+
+ps：and--可以替换or
+
+
+
+
+
+*******************set
+9。《set》语句
+注意要'，'
+
+
+*******************sql
+<sql id="if-title-author">
+   <if test="title != null">
+      title = #{title}
+   </if>
+   <if test="author != null">
+      and author = #{author}
+   </if>
+</sql>
+
+①、最好基于 单表来定义 sql 片段，提高片段的可重用性
+②、在 sql 片段中不要包括 where
+
+
+
+*******************choose
+类似于 Java 的 switch 语句
+<select id="queryBlogChoose" parameterType="map" resultType="blog">
+  select * from blog
+   <where>
+       <choose>
+           <when test="title != null">
+                title = #{title}
+           </when>
+           <when test="author != null">
+              and author = #{author}
+           </when>
+           <otherwise>
+              and views = #{views}
+           </otherwise>
+       </choose>
+   </where>
+</select>
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lxy.dao.BlogMapper">
+
+<!--1-->
+    <insert id="addBlog" parameterType="blog">
+        insert into blog(id, title, author, create_time, views)
+        values(#{id}, #{title}, #{author},#{createTime}, #{views});
+    </insert>
+
+
+
+<!--2if-->
+    <select id="selectBlogIF" parameterType="map" resultType="blog">
+        select * from blog where 1=1
+        <if test="title != null">
+            and title = #{title}
+        </if>
+        <if test="author != null">
+            and author = #{author}
+        </if>
+    </select>
+
+
+
+<!--3where-->
+    <select id="selectBlogWhere" parameterType="map" resultType="blog">
+        select * from blog
+        <where>
+            <if test="title != null">
+                and title = #{title}
+            </if>
+            <if test="author != null">
+                and author = #{author}
+            </if>
+
+        </where>
+    </select>
+
+
+<!--4set-->
+    <!--注意set是用的逗号隔开-->
+    <update id="updateBlogSet" parameterType="map">
+        update blog
+        <set>
+            <if test="title != null">
+                title = #{title},
+            </if>
+            <if test="author != null">
+                author = #{author}
+            </if>
+        </set>
+        where id = #{id};
+    </update>
+
+
+
+
+<!--choose:类似于switch-->
+    <select id="selectBlogChoose" parameterType="map" resultType="blog">
+        select * from blog
+        <where>
+            <choose>
+                <when test="title != null">
+                    title = #{title}
+                </when>
+                <when test="author != null">
+                    and author = #{author}
+                </when>
+                <otherwise>
+                    and views = #{views}
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+
+
+
+<!--4when-->
+    <select id="selectBlogWhen" parameterType="map" resultType="blog">
+        select * from blog
+        <where>
+           <choose>
+               <when test="title != null">
+                   title = #{title}
+               </when>
+               <when test="author != null">
+                   and author = #{auyhor}
+               </when>
+               <otherwise>
+                   and views = #{views}
+               </otherwise>
+           </choose>
+        </where>
+    </select>
+
+
+
+
+<!--sql-->
+    <sql id="if-title-author">
+        <if test="title != null">
+            title = #{title}
+        </if>
+        <if test="author != null">
+            and author = #{author}
+        </if>
+    </sql>
+    <select id="selectBlogSql" parameterType="map" resultType="blog">
+        select * from blog
+        <where>
+            <!-- 引用 sql 片段，如果refid 指定的不在本文件中，那么需要在前面加上 namespace -->
+            <include refid="if-title-author"></include>
+            <!-- 在这里还可以引用其他的 sql 片段 -->
+        </where>
+    </select>
+
+
+<!--foreach-->
+    <select id="selectBlogFor"  parameterType="map" resultType="blog">
+        select * from blog
+        <where>
+            <foreach collection="ids" item="id" open=" and (" close=")" separator=" or ">
+                id = #{id}
+            </foreach>
+        </where>
+
+    </select>
+
+
+
+
+</mapper>

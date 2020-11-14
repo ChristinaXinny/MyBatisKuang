@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+
+
+    <properties resource="db.properties">
+        <property name="username" value="root"/>
+        <property name="pwd" value="11111"/>
+    </properties>
+
+
+
+
+
+    <typeAliases>
+<!--    可以给实体类其别名-->
+        <typeAlias type="com.lxy.pojo.User"/>
+<!--        定位到实体类上层的包 其别名-->
+<!--        <package name="com.lxy.pojo"/>-->
+<!--   其别名之后UserMapper.xml的-->
+
+    </typeAliases>
+
+<!--    com.mysql.cj.jdbc.Driver-->
+    <environments default="development">
+<!--    <environments default="test"> 在这里更改default 要使用那个environment-->
+
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="${driver}"/>
+                <property name="url"
+                          value="${url}"/>
+                <property name="username" value="${username}"/>
+                <property name="password" value="${password}"/>
+            </dataSource>
+        </environment>
+
+
+<!--        <environment id="test">-->
+<!--            <transactionManager type="JDBC"/>-->
+<!--            <dataSource type="POOLED">-->
+<!--                <property name="driver" value="com.mysql.cj.jdbc.Driver"/>-->
+<!--                <property name="url"-->
+<!--                          value="jdbc:mysql://localhost:3306/test?useSSL=false&amp;useUnicode=true&amp;"/>-->
+<!--                <property name="username" value="root"/>-->
+<!--                <property name="password" value="qwe123123"/>-->
+<!--            </dataSource>-->
+<!--        </environment>-->
+
+
+    </environments>
+
+
+    <mappers>
+<!--   <mapper resource="com/lxy/dao/UserMapper.xml"/>-->
+<!--        <mapper resource="com.lxy.dao.UserMapper"/>-->
+        <package name="com.lxy.dao"/>
+<!--        <mapper resource="com.lxy.dao."-->
+    </mappers>
+
+</configuration>

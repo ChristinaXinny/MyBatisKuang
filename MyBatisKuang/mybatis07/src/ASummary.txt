@@ -1,0 +1,109 @@
+
+
+
+
+1.注意 【 结果查询
+mapper接口
+ //获取指定老师，及老师下的所有学生
+    Teacher getTeacherStu(@Param("tid") int id);
+～～～～～
+mapper。xml
+   //获取指定老师，及老师下的所有学生
+<select id="getTeacherStu" resultMap="TeacherStudent">
+    select t.id tid,  t.name tname, s.id sid, s.name sname
+    from student s,teacher t
+    where s.tid = t.id
+    and t.id = #{tid}
+</select>
+～～
+其中接口中的@Param("tid")------#{tid}
+
+
+
+
+
+2。注意【结果查询
+mapper。xml中
+<select id="getTeacherStu" resultMap="TeacherStudent">
+        select t.id tid,  t.name tname, s.id sid, s.name sname
+        from student s,teacher t
+        where s.tid = t.id
+        and t.id = #{tid}
+    </select>
+
+    <resultMap id="TeacherStudent" type="Teacher">
+        <result property="id" column="tid"/>
+        <result property="name" column="tnaem"/>
+        <collection property="students" ofType="Student">
+            <result property="id" column="sid"/>
+            <result property="name" column="sname"/>
+
+        </collection>
+    </resultMap>
+的
+<collection property="students" ofType="Student">
+语句 不是javaType而是ofType
+【其实ofType和javaType的本质是一样的
+只是在collection中是使用of
+二在association中是用java
+
+
+
+
+
+3。注意【子查询
+
+ <select id="getTeacherStu2" resultMap="TeacherStudent2">
+        select * ferom teacher
+    </select>
+
+    <resultMap id="TeacherStudent2" type="Teacher">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <collection property="students" javaType="ArrayList" ofType="Student" select="stu2" column="id"/>
+    </resultMap>
+
+    <select id="stu2" resultType="Student">
+        select * from student where tid =#{tid}
+    </select>
+得到的结果是
+Teacher{id=0, name='秦老师', students=[
+    Student{id=1, name='小明', tid=1},
+    Student{id=2, name='小红', tid=1},
+    Student{id=3, name='小张', tid=1},
+    Student{id=4, name='小李', tid=1},
+    Student{id=5, name='小王', tid=1}
+]}
+这里的id为0
+因为查了id了，但是映射到student了 再加一个result就可以
+
+
+
+ <select id="getTeacherStu2" resultMap="TeacherStudent2">
+        select * from teacher
+    </select>
+
+    <resultMap id="TeacherStudent2" type="Teacher">
+       【 <result property="id" column="id"/> 】
+        <collection property="students" javaType="ArrayList" ofType="Student" select="stu2" column="id"/>
+    </resultMap>
+
+    <select id="stu2" resultType="Student">
+        select * from student where tid =#{tid}
+    </select>
+
+在【】处加了id的查询
+但是没有result name 可以看出在select * from teacher中
+其实是查询出了name 和 id两个值
+但是在<collection 。。。。。。 column="id"/>
+语句中 把id映射给了stu2的查询 所以就没有了
+
+
+
+
+
+
+4。注意
+javaType="ArrayList" ofType="Student"
+javaType：用来指定实体类中的属性的类型
+ofType： 用来指定映射到List或是集合中的pojo类型 即泛型的约束类型就是<>里面的东西 【一般只有不是基本类型的时候才写

@@ -1,0 +1,197 @@
+
+
+注释sql语句 仅可用于简单sql语句
+@Select("select * from teacher where id = #{tid}")
+    Teacher getTeaId(@Param("tid") int id);
+
+
+报错：
+Error querying database.  Cause: org.apache.ibatis.reflection.ReflectionException: Error instantiating class com.lxy.pojo.Student with invalid types (int,String,Teacher) or values (1,小明,1). Cause: java.lang.IllegalArgumentException: argument type mismatch
+###
+没有写student，teacher类的无参构造
+
+
+一对多：
+一个teacher有多个student
+根据学生信息查询老师的信息
+其中sql：
+select s.id, s.name, t,name as tea_name
+from student s, teacher t
+where s.tid = t.id
+
+在student.xml内
+/*
+    <select id="getStu" resultMap="StudentTeacher">
+        select * from student
+    </select>
+
+    <resultMap id="StudentTeacher" type="Student">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <association property="t" column="tid" javaType="Teacher" select="getTeacher"/>
+    </resultMap>
+
+    <select id="getTeacher" resultType="Teacher">
+        select * from teacher where id = #{id}
+    </select>
+
+*/
+思路：
+ 查询所有学生的信息
+ 根据查询出来的学生的tid 寻找对应的老师
+
+<!--  复杂的属性 单独处理 对象：association 集合：collection -->
+<!--   property="t"【student类内的Teacher的属性名字】
+        column="tid" 【student数据库的表的列名】
+         javaType="Teacher" 【复杂属性的类型 t的类型是Teacher】
+          select="getTeacher"  【再次搜索的是下面的select中的select id="getTeacher"】
+-->
+
+
+<!--
+    查询所有学生的信息
+    根据查询出来的学生tid 寻找对应的老师
+-->
+
+    <select id="getStu" resultMap="StudentTeacher">
+        select * from student
+    </select>
+
+    <resultMap id="StudentTeacher" type="Student">
+
+//下面俩句可以不用写
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+
+
+//复杂的属性 单独处理 对象：association 集合：collection
+        <association property="t" column="tid" javaType="Teacher" select="getTeacher"/>
+
+
+
+property="t"【student类内的Teacher的属性名字】
+column="tid" 【student数据库的表的列名】
+javaType="Teacher" 【复杂属性的类型 t的类型是Teacher】
+select="getTeacher"  【再次搜索的是下面的select中的select id="getTeacher"】
+
+
+    </resultMap>
+
+    <select id="getTeacher" resultType="Teacher">
+        select * from teacher where id = #{id}
+    </select>
+
+
+
+----------------------------------
+<select id="getStu" resultMap="StudentTeacher">
+
+<resultMap id="StudentTeacher" type="Student">
+
+<association property="t" column="tid" javaType="Teacher" select="getTeacher"/>
+
+<select id="getTeacher" resultType="Teacher">
+
+
+
+
+
+----------------------------------Mapper----------------------------------
+   <!--
+   需求：获取所有学生及对应老师的信息
+   思路：
+       1. 获取所有学生的信息
+       2. 根据获取的学生信息的老师ID->获取该老师的信息
+       3. 思考问题，这样学生的结果集中应该包含老师，该如何处理呢，数据库中我们一般使用关联查询？
+           1. 做一个结果集映射：StudentTeacher
+           2. StudentTeacher结果集的类型为 Student
+           3. 学生中老师的属性为teacher，对应数据库中为tid。
+              多个 [1,...）学生关联一个老师=> 一对一，一对多
+           4. 查看官网找到：association – 一个复杂类型的关联；使用它来处理关联查询
+   -->
+
+
+
+   <!--association关联属性 property属性名 javaType属性类型 column在多的一方的表中的列名-->
+
+
+
+
+
+
+<!--第二种：结果-->
+
+/*
+    <select id="getStu2" resultType="StudentTeacher2">
+        select s.id sid, s.name sname , t.name tname
+        from student s,teacher t
+        where s.tid = t.id
+    </select>
+
+    <resultMap id="StudentTeacher2" type="Student">
+//这里的column="sid"要和上面的sql语句的名字一样 上面的sql语句中 为s。id改了名字 sid这里就要写sid
+        <result property="id" column="sid"/>
+        <result property="name" column="sname"/>
+        <association property="teacher" javaType="Teacher">
+            <result property="name" column="tname"/>
+        </association>
+
+    </resultMap>
+
+*/
+
+
+ps!!!
+以上字段查询结果为：
+<==    Columns: sid, sname, tname
+<==        Row: 1, 小明, 秦老师
+<==        Row: 2, 小红, 秦老师
+<==        Row: 3, 小张, 秦老师
+<==        Row: 4, 小李, 秦老师
+<==        Row: 5, 小王, 秦老师
+<==      Total: 5
+Student{id=1, name='小明', t=Teacher{id=0, name='秦老师'}}
+Student{id=2, name='小红', t=Teacher{id=0, name='秦老师'}}
+Student{id=3, name='小张', t=Teacher{id=0, name='秦老师'}}
+Student{id=4, name='小李', t=Teacher{id=0, name='秦老师'}}
+Student{id=5, name='小王', t=Teacher{id=0, name='秦老师'}}
+
+
+因为么有在sql语句中选择查询老师的id
+所以在《association》语句中即便加上了 <result property="id" column="tId"/>
+也无法查询出老师的id
+依旧是id = 0
+
+只有改成
+
+
+    <select id="getStu2" resultMap="StudentTeacher2">
+        select s.id sid, s.name sname ,【t.id tid, 】 t.name tname
+        from student s,teacher t
+        where s.tid = t.id
+    </select>
+
+    <resultMap id="StudentTeacher2" type="Student">
+        <result property="id" column="sid"/>
+        <result property="name" column="sname"/>
+        <association property="tea" javaType="Teacher">
+           【 <result property="id" column="tId"/> 】
+            <result property="name" column="tname"/>
+        </association>
+
+    </resultMap>
+
+加入了以上的【】两句之后 才有
+
+<==    Columns: sid, sname, tid, tname
+<==        Row: 1, 小明, 1, 秦老师
+<==        Row: 2, 小红, 1, 秦老师
+<==        Row: 3, 小张, 1, 秦老师
+<==        Row: 4, 小李, 1, 秦老师
+<==        Row: 5, 小王, 1, 秦老师
+<==      Total: 5
+Student{id=1, name='小明', t=Teacher{id=1, name='秦老师'}}
+Student{id=2, name='小红', t=Teacher{id=1, name='秦老师'}}
+Student{id=3, name='小张', t=Teacher{id=1, name='秦老师'}}
+Student{id=4, name='小李', t=Teacher{id=1, name='秦老师'}}
+Student{id=5, name='小王', t=Teacher{id=1, name='秦老师'}}

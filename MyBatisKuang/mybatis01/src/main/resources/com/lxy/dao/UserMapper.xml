@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--namespace绑定一个Dao/Mapper接口-->
+<mapper namespace="com.lxy.dao.UserMapper">
+
+
+    <!--    查询-->
+    <select id="getUserList" resultType="com.lxy.pojo.User">
+        select * from mybatisKuang.user
+    </select>
+
+    <!--    //    根据id查询用户-->
+    <select id="getUserById" parameterType="int" resultType="com.lxy.pojo.User">
+        select * from mybatisKuang.USER where id = #{id}
+    </select>
+
+
+    <!--    //    插入 int addUser(User u);-->
+    <insert id="addUser" parameterType="com.lxy.pojo.User">
+    insert into mybatisKuang.user(id, name, pwd) values(#{id}, #{name}, #{pwd})
+</insert>
+
+
+    <!--    //    修改 int updateUser(User u);-->
+    <update id="updateUser" parameterType="com.lxy.pojo.User">
+    update mybatisKuang.user set name=#{name}, pwd = #{pwd} where id = #{id};
+</update>
+
+
+    <!--    //    删除 void deleteUser(int id);-->
+    <delete id="deleteUser" parameterType="int">
+        delete from mybatisKuang.USER where id = #{id};
+    </delete>
+
+
+    <!--    //    万能map查询  int addUserMap(Map<String, Object> map);-->
+    <insert id="addUserMap" parameterType="map">
+        insert into mybatisKuang.user (id, name, pwd) values(#{userid}, #{userName}, #{Password} )
+    </insert>
+
+
+    <insert id="addUserMap2" parameterType="map">
+        insert into mybatisKuang.user (id,  pwd) values(#{userid},  #{Password} )
+    </insert>
+
+
+    <!--    //    查询like用户 List<User> getUserLike();-->
+    <select id="getUserLike" resultType="com.lxy.pojo.User">
+        select * from mybatisKuang.user where name like "%"#{value}"%";
+    </select>
+
+
+</mapper>

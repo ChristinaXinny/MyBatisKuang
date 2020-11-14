@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--namespace绑定一个Dao/Mapper接口-->
+<mapper namespace="com.lxy.dao.UserMapper">
+
+
+    <!--    查询-->
+    <select id="getUserList" resultType="User">
+        select * from mybatisKuang.user
+    </select>
+
+
+<!--    &lt;!&ndash;    查询  其别名后&ndash;&gt;-->
+<!--    <select id="getUserList" resultType="User">-->
+<!--        select * from mybatisKuang.user-->
+<!--    </select>-->
+
+
+
+<!--    &lt;!&ndash;    查询  其别名后&ndash;&gt;-->
+<!--    <select id="getUserList" resultType="hello">-->
+<!--        select * from mybatisKuang.user-->
+<!--    </select>-->
+
+
+</mapper>
